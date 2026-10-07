@@ -1,0 +1,26 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build Notepad++",
+            "type": "shell",
+            "command": "& 'C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\Tools\\Launch-VsDevShell.ps1'; msbuild '${workspaceFolder}\\vs.proj\\MicroBuild.vcxproj' /p:Configuration=Release /p:Platform=x64 ; Remove-Item '${workspaceFolder}\\MicroBuild' -Recurse -Force ; Rename-Item '${workspaceFolder}\\bin64' '${workspaceFolder}\\MicroBuild'",
+            "options": {
+                "shell": {
+                    "executable": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+                    "args": [
+                        "-NoProfile",
+                        "-ExecutionPolicy",
+                        "Bypass",
+                        "-Command"
+                    ]
+                }
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": "$msCompile"
+        }
+    ]
+}
