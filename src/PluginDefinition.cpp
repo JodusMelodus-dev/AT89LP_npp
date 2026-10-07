@@ -20,6 +20,7 @@
 
 #include <filesystem>
 #include <vector>
+#include <Windows.h>
 
 //
 // The plugin data that Notepad++ needs
@@ -118,14 +119,6 @@ void build()
         }
     }
 
-    for (const auto &path : sourceFiles)
-    {
-        ::MessageBox(
-            NULL,
-            path.c_str(),
-            TEXT("Source file"),
-            MB_OK);
-    }
 }
 
 void helloDlg()
