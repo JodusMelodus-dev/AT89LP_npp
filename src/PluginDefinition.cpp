@@ -111,7 +111,8 @@ void build()
 
     for (const auto &entry : std::filesystem::directory_iterator(srcDirectory))
     {
-        if (entry.is_regular_file())
+        const auto extension = entry.path().extension();
+        if (entry.is_regular_file() && (extension == ".c" || extension == ".h"))
         {
             sourceFiles.push_back(entry.path());
         }
