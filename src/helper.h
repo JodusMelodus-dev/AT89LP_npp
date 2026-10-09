@@ -53,6 +53,8 @@ bool runCommand(std::wstring command)
         return 1;
     }
 
+    WaitForSingleObject(processInfo.hProcess, INFINITE);
+
     CloseHandle(processInfo.hProcess);
     CloseHandle(processInfo.hThread);
     return 0;
@@ -67,13 +69,13 @@ bool buildSourceFile(NppData &nppData, std::filesystem::path path, std::wstring 
     std::wstring command = L"cmd.exe /C sdcc -mmcs51 -c"
                            L" --model-" +
                            modelSize +
-                           L" -I C:\\c_libraries" +
+                           L" -I \"C:\\c_libraries\"" +
                            L" --xram-size " + xramSize +
                            L" --iram-size " + iramSize +
                            L" --code-size " + codeSize +
-                           L" " +
+                           L" \"" +
                            path.wstring() +
-                           L" -o " +
+                           L"\" -o " +
                            buildFile.wstring() + L".rel";
 
     return runCommand(command);
@@ -105,7 +107,7 @@ bool linkFiles(NppData &nppData, std::wstring modelSize, std::wstring xramSize, 
     std::wstring command = L"cmd.exe /C sdcc -mmcs51"
                            L" --model-" +
                            modelSize +
-                           L" -I C:\\c_libraries" +
+                           L" -I \"C:\\c_libraries\"" +
                            L" --xram-size " + xramSize +
                            L" --iram-size " + iramSize +
                            L" --code-size " + codeSize +
