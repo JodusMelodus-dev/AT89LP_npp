@@ -99,9 +99,8 @@ bool setCommand(size_t index, TCHAR *cmdName, PFUNCPLUGINCMD pFunc, ShortcutKey 
 //----------------------------------------------//
 void build()
 {
-    std::vector<std::filesystem::path> sourceFiles = getSourceFiles(nppData);
-
-    runBuild();
+    buildSourceFiles(nppData);
+    linkFiles(nppData, L"small", L"256", L"256", L"65536");
 }
 
 void helloDlg()
