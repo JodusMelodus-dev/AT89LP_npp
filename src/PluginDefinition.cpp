@@ -18,7 +18,7 @@
 #include "PluginDefinition.h"
 #include "menuCmdID.h"
 
-#include "helper.h"
+#include "MicroBuild.h"
 #include <vector>
 #include <filesystem>
 #include <Windows.h>
