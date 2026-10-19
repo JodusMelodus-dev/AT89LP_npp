@@ -102,7 +102,7 @@ jobs:
       run: |
         foreach ($target in ('Win32', 'x64', 'ARM64'))
         {
-            msbuild NppPluginTemplate.vcxproj /m /p:configuration=Release /p:platform="$target"
+            msbuild MicroBuild.vcxproj /m /p:configuration=Release /p:platform="$target"
         }
 
     - name: Commit any updates to the repo
