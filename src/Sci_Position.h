@@ -4,7 +4,7 @@
  ** These need to be available to clients written in C so are not in a C++ namespace.
  **/
 // Copyright 2015 by Neil Hodgson <neilh@scintilla.org>
-// The License.txt file describes the conditions under which this software may be distributed.
+// The LICENSE.md file describes the conditions under which this software may be distributed.
 
 #ifndef SCI_POSITION_H
 #define SCI_POSITION_H
@@ -21,9 +21,9 @@ typedef size_t Sci_PositionU;
 typedef intptr_t Sci_PositionCR;
 
 #ifdef _WIN32
-	#define SCI_METHOD __stdcall
+#define SCI_METHOD __stdcall
 #else
-	#define SCI_METHOD
+#define SCI_METHOD
 #endif
 
 #endif

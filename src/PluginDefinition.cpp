@@ -64,7 +64,7 @@ void commandMenuInit()
     //            bool check0nInit                // optional. Make this menu item be checked visually
     //            );
     setCommand(0, TEXT("Build"), build, NULL, false);
-    setCommand(1, TEXT("Hello (with dialog)"), helloDlg, NULL, false);
+    setCommand(1, TEXT("Program"), program, NULL, false);
 }
 
 //
@@ -99,11 +99,22 @@ bool setCommand(size_t index, TCHAR *cmdName, PFUNCPLUGINCMD pFunc, ShortcutKey 
 //----------------------------------------------//
 void build()
 {
-    buildSourceFiles(nppData);
-    linkFiles(nppData, L"small", L"256", L"256", L"65536");
+    if (!buildSourceFiles(nppData))
+    {
+        ::MessageBox(NULL, TEXT("Build failed"), TEXT("Error"), MB_OK);
+        return;
+    }
+
+    if (!linkFiles(nppData, L"small", L"256", L"256", L"65536"))
+    {
+        ::MessageBox(NULL, TEXT("Linking failed"), TEXT("Error"), MB_OK);
+        return;
+    }
+
+    ::MessageBox(NULL, TEXT("Build successful!"), TEXT("Success"), MB_OK);
 }
 
-void helloDlg()
+void program()
 {
-    ::MessageBox(NULL, TEXT("Hello, Notepad++!"), TEXT("Notepad++ Plugin Template"), MB_OK);
+    ::MessageBox(NULL, TEXT("Not yet implemented"), TEXT("MicroBuild"), MB_OK);
 }
