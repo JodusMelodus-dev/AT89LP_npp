@@ -63,8 +63,20 @@ void commandMenuInit()
     //            ShortcutKey *shortcut,          // optional. Define a shortcut to trigger this command
     //            bool check0nInit                // optional. Make this menu item be checked visually
     //            );
-    setCommand(0, TEXT("Build"), build, NULL, false);
-    setCommand(1, TEXT("Program"), program, NULL, false);
+
+    static ShortcutKey buildShortcut;
+    buildShortcut._isCtrl = false;
+    buildShortcut._isShift = false;
+    buildShortcut._isAlt = true;
+    buildShortcut._key = 'B';
+    static ShortcutKey programShortcut;
+    programShortcut._isCtrl = false;
+    programShortcut._isShift = false;
+    programShortcut._isAlt = true;
+    programShortcut._key = 'P';
+
+    setCommand(0, TEXT("Build"), build, &buildShortcut, false);
+    setCommand(1, TEXT("Program"), program, &programShortcut, false);
 }
 
 //
