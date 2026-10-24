@@ -10,6 +10,32 @@
 #include <optional>
 #include <filesystem>
 #include <utility>
+#include <nlohmann/json.hpp>
+#include <fstream>
+#include <filesystem>
+
+struct MicroBuildSettings
+{
+    std::vector<std::string> includeDirectories = {};
+    std::string memoryModel = "small";
+    unsigned int iRamSize = 256;
+    unsigned int xRamSize = 2048;
+    unsigned int codeSize = 65536;
+
+    std::string device = "AT89C51RD2";
+    std::string serialPort = "";
+    unsigned int baudRate = 9600;
+} microBuildSettings;
+
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(
+    MicroBuildSettings,
+    memoryModel,
+    iRamSize,
+    xRamSize,
+    codeSize,
+    device,
+    serialPort,
+    baudRate)
 
 template <typename... Args>
 std::wstring format(Args &&...args)
@@ -34,6 +60,86 @@ std::optional<std::filesystem::path> getCurrentDirectory(NppData &nppData)
         return std::nullopt;
     }
     return currentDirectoryPath;
+}
+
+std::wstring ToWideString(const std::string &str)
+{
+    if (str.empty())
+        return {};
+
+    int length = MultiByteToWideChar(
+        CP_UTF8, MB_ERR_INVALID_CHARS,
+        str.data(), static_cast<int>(str.size()),
+        nullptr, 0);
+
+    if (length == 0)
+        throw std::runtime_error("Invalid UTF-8 string");
+
+    std::wstring result(length, L'\0');
+
+    MultiByteToWideChar(
+        CP_UTF8, MB_ERR_INVALID_CHARS,
+        str.data(), static_cast<int>(str.size()),
+        result.data(), length);
+
+    return result;
+}
+
+bool loadSettings(NppData &nppData)
+{
+    std::optional<std::filesystem::path> currentDir = getCurrentDirectory(nppData);
+    if (!currentDir)
+    {
+        return false;
+    }
+
+    if (currentDir.value().stem() != "src")
+    {
+        ::MessageBox(NULL, TEXT("Unknown directory"), TEXT("Error"), MB_OK);
+        return false;
+    }
+
+    std::filesystem::path configPath = currentDir.value().parent_path() / ".vscode" / "settings.json";
+
+    try
+    {
+        std::ifstream file(configPath);
+        if (!file.is_open())
+            return false;
+
+        nlohmann::json json;
+        file >> json;
+
+        if (json.contains("at89lp.includeDirectories"))
+            microBuildSettings.includeDirectories = json.at("at89lp.includeDirectories").get<std::vector<std::string>>();
+        if (json.contains("at89lp.memoryModel"))
+            microBuildSettings.memoryModel = json.at("at89lp.memoryModel").get<std::string>();
+        if (json.contains("at89lp.iRamSize"))
+            microBuildSettings.iRamSize = json.at("at89lp.iRamSize").get<unsigned int>();
+        if (json.contains("at89lp.xRamSize"))
+            microBuildSettings.iRamSize = json.at("at89lp.xRamSize").get<unsigned int>();
+        if (json.contains("at89lp.codeSize"))
+            microBuildSettings.iRamSize = json.at("at89lp.codeSize").get<unsigned int>();
+
+        if (json.contains("at89lp.device"))
+            microBuildSettings.device = json.at("at89lp.device").get<std::string>();
+        if (json.contains("at89lp.serialPort"))
+            microBuildSettings.serialPort = json.at("at89lp.serialPort").get<std::string>();
+        if (json.contains("at89lp.baudRate"))
+            microBuildSettings.baudRate = json.at("at89lp.baudRate").get<unsigned int>();
+        return true;
+    }
+    catch (const nlohmann::json::exception &e)
+    {
+        ::MessageBoxA(NULL, e.what(), "Error", MB_OK);
+        return false;
+    }
+    catch (const std::ios_base::failure &e)
+    {
+        ::MessageBoxA(NULL, e.what(), "Error", MB_OK);
+        return false;
+    }
+    return false;
 }
 
 std::optional<std::filesystem::path> getBuildDir(NppData &nppData)
@@ -135,7 +241,7 @@ bool runCommand(std::wstring command)
     return true;
 }
 
-bool buildSourceFile(NppData &nppData, std::filesystem::path path, std::wstring modelSize, std::wstring xramSize, std::wstring iramSize, std::wstring codeSize)
+bool buildSourceFile(NppData &nppData, std::filesystem::path path)
 {
     std::optional<std::filesystem::path> buildDirectory = getBuildDir(nppData);
     if (!buildDirectory)
@@ -148,11 +254,11 @@ bool buildSourceFile(NppData &nppData, std::filesystem::path path, std::wstring 
 
     std::wstring command = L"cmd.exe /C sdcc -mmcs51 -c"
                            L" --model-" +
-                           modelSize +
+                           ToWideString(microBuildSettings.memoryModel) +
                            L" -I \"C:\\c_libraries\"" +
-                           L" --xram-size " + xramSize +
-                           L" --iram-size " + iramSize +
-                           L" --code-size " + codeSize +
+                           L" --xram-size " + std::to_wstring(microBuildSettings.xRamSize) +
+                           L" --iram-size " + std::to_wstring(microBuildSettings.iRamSize) +
+                           L" --code-size " + std::to_wstring(microBuildSettings.codeSize) +
                            L" \"" +
                            path.wstring() +
                            L"\" -o " +
@@ -161,7 +267,7 @@ bool buildSourceFile(NppData &nppData, std::filesystem::path path, std::wstring 
     return runCommand(command);
 }
 
-bool linkFiles(NppData &nppData, std::wstring modelSize, std::wstring xramSize, std::wstring iramSize, std::wstring codeSize)
+bool linkFiles(NppData &nppData)
 {
     std::optional<std::filesystem::path> buildDirectory = getBuildDir(nppData);
     if (!buildDirectory)
@@ -173,11 +279,11 @@ bool linkFiles(NppData &nppData, std::wstring modelSize, std::wstring xramSize, 
 
     std::wstring command = L"cmd.exe /C sdcc -mmcs51"
                            L" --model-" +
-                           modelSize +
+                           ToWideString(microBuildSettings.memoryModel) +
                            L" -I \"C:\\c_libraries\"" +
-                           L" --xram-size " + xramSize +
-                           L" --iram-size " + iramSize +
-                           L" --code-size " + codeSize +
+                           L" --xram-size " + std::to_wstring(microBuildSettings.xRamSize) +
+                           L" --iram-size " + std::to_wstring(microBuildSettings.iRamSize) +
+                           L" --code-size " + std::to_wstring(microBuildSettings.codeSize) +
                            L" --out-fmt-ihx ";
 
     for (const auto &file : linkFiles)
@@ -212,7 +318,7 @@ bool buildSourceFiles(NppData &nppData)
 
     for (const auto &file : sourceFiles)
     {
-        if (!buildSourceFile(nppData, file, L"small", L"256", L"256", L"65536"))
+        if (!buildSourceFile(nppData, file))
         {
             ::MessageBoxW(NULL, format("Failed to build source file: ", file.native()).c_str(), TEXT("Error"), MB_OK);
             return false;

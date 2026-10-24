@@ -111,13 +111,15 @@ bool setCommand(size_t index, TCHAR *cmdName, PFUNCPLUGINCMD pFunc, ShortcutKey 
 //----------------------------------------------//
 void build()
 {
+    if (!loadSettings(nppData))
+        return;
     if (!buildSourceFiles(nppData))
     {
         ::MessageBox(NULL, TEXT("Build failed"), TEXT("Error"), MB_OK);
         return;
     }
 
-    if (!linkFiles(nppData, L"small", L"256", L"256", L"65536"))
+    if (!linkFiles(nppData))
     {
         ::MessageBox(NULL, TEXT("Linking failed"), TEXT("Error"), MB_OK);
         return;
@@ -128,5 +130,7 @@ void build()
 
 void program()
 {
+    if (!loadSettings(nppData))
+        return;
     ::MessageBox(NULL, TEXT("Not yet implemented"), TEXT("MicroBuild"), MB_OK);
 }
